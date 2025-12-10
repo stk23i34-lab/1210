@@ -2,34 +2,21 @@
 <html>
 <head>
   <meta charset="utf-8" />
-  <title>MindAR AR Sample</title>
-
+  <title>MindAR Test</title>
   <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.1.4/dist/mindar-image-aframe.prod.js"></script>
-
   <style>
-    body {
-      margin: 0;
-      overflow: hidden;
-    }
+    body { margin: 0; overflow: hidden; }
   </style>
 </head>
 <body>
-  <!-- UI要素はシーンの外に置く -->
-  <h1>スマホカメラ起動</h1>
-
-  <!-- シーンは1つだけ -->
   <a-scene mindar-image="imageTargetSrc: ./target.mind; autoStart: true;"
+           embedded
            vr-mode-ui="enabled: false"
-           device-orientation-permission-ui="enabled: true"
-           renderer="colorManagement: true; physicallyCorrectLights: true;"
-           embedded>
-
+           device-orientation-permission-ui="enabled: true">
     <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
-
     <a-entity mindar-image-target="targetIndex: 0">
       <a-box position="0 0 0.1" depth="0.2" height="0.2" width="0.2" color="#FF4444"></a-box>
-      <a-text value="認識しました！" align="center" position="0 -0.4 0" color="#00CCFF"></a-text>
     </a-entity>
   </a-scene>
 </body>
