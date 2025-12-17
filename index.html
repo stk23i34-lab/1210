@@ -1,36 +1,48 @@
 <!DOCTYPE html>
-<html>
+<html lang="ja">
   <head>
     <meta charset="utf-8" />
-    <title>MindAR Firebase AR</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, user-scalable=no"
+    />
 
     <!-- A-Frame -->
     <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
 
     <!-- MindAR -->
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
+
+    <!-- Firebase (v9 compat) -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+    <style>
+      body {
+        margin: 0;
+        overflow: hidden;
+      }
+    </style>
   </head>
 
   <body>
     <a-scene
-      mindar-image="imageTargetSrc: ./target.mind;"
-      color-space="sRGB"
-      renderer="colorManagement: true, physicallyCorrectLights"
+      mindar-image="imageTargetSrc: https://cdn.jsdelivr.net/gh/hiukim/mind-ar-js@1.2.5/examples/image-tracking/assets/card-example/card.mind;"
       vr-mode-ui="enabled: false"
       device-orientation-permission-ui="enabled: false"
+      renderer="colorManagement: true; physicallyCorrectLights: true"
       embedded
     >
+      <!-- カメラ -->
       <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
 
-      <!-- 画像認識されたときに表示される -->
+      <!-- マーカー検出 -->
       <a-entity mindar-image-target="targetIndex: 0">
-
         <!-- 〇 -->
         <a-text
-          id="okMark"
+          id="okText"
           value="〇"
-          color="green"
+          color="#00FF00"
           align="center"
           position="0 0 0.1"
           scale="3 3 3"
@@ -39,51 +51,52 @@
 
         <!-- × -->
         <a-text
-          id="ngMark"
+          id="ngText"
           value="×"
-          color="red"
+          color="#FF0000"
           align="center"
           position="0 0 0.1"
           scale="3 3 3"
           visible="false"
         ></a-text>
-
       </a-entity>
     </a-scene>
 
-    <!-- Firebase -->
-    <script type="module">
-      import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-      import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
-
-      // 🔽 control.html と同じ設定にする
+    <script>
+      // Firebase 設定（あなたのもの）
       const firebaseConfig = {
-        apiKey: "YOUR_API_KEY",
-        authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-        databaseURL: "https://kadaikenkyu-f09eb-default-rtdb.firebaseio.com",
-        projectId: "YOUR_PROJECT_ID",
-        storageBucket: "YOUR_PROJECT_ID.appspot.com",
-        messagingSenderId: "XXXX",
-        appId: "XXXX"
+        apiKey: "AIzaSyBCBmEzgp94ik4BdrSW0gxN-JwtBHwdvVw",
+        authDomain: "kadaikenkyu-f09eb.firebaseapp.com",
+        databaseURL:
+          "https://kadaikenkyu-f09eb-default-rtdb.firebaseio.com",
+        projectId: "kadaikenkyu-f09eb",
+        storageBucket: "kadaikenkyu-f09eb.firebasestorage.app",
+        messagingSenderId: "630288283837",
+        appId: "1:630288283837:web:bd2572959010b0e7c5dfd4",
       };
 
-      const app = initializeApp(firebaseConfig);
-      const db = getDatabase(app);
+      // Firebase 初期化
+      firebase.initializeApp(firebaseConfig);
+      const database = firebase.database();
 
-      const statusRef = ref(db, "status");
+      const okText = document.getElementById("okText");
+      const ngText = document.getElementById("ngText");
 
-      onValue(statusRef, (snapshot) => {
+      // status を監視
+      const statusRef = database.ref("status");
+
+      statusRef.on("value", (snapshot) => {
         const status = snapshot.val();
 
-        const ok = document.getElementById("okMark");
-        const ng = document.getElementById("ngMark");
-
         if (status === "ok") {
-          ok.setAttribute("visible", "true");
-          ng.setAttribute("visible", "false");
+          okText.setAttribute("visible", true);
+          ngText.setAttribute("visible", false);
         } else if (status === "ng") {
-          ok.setAttribute("visible", "false");
-          ng.setAttribute("visible", "true");
+          okText.setAttribute("visible", false);
+          ngText.setAttribute("visible", true);
+        } else {
+          okText.setAttribute("visible", false);
+          ngText.setAttribute("visible", false);
         }
       });
     </script>
