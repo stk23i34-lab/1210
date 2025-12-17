@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html>
-
 <head>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
@@ -15,42 +14,54 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 </head>
 
-<body>
-  <a-scene mindar-image="imageTargetSrc: ./targets.mind;" color-space="sRGB"
-    renderer="colorManagement: true, physicallyCorrectLights" vr-mode-ui="enabled: false"
-    device-orientation-permission-ui="enabled: false">
+<body style="margin:0; overflow:hidden;">
+  <a-scene
+    mindar-image="imageTargetSrc: ./targets.mind;"
+    color-space="sRGB"
+    renderer="colorManagement: true, physicallyCorrectLights"
+    vr-mode-ui="enabled: false"
+    device-orientation-permission-ui="enabled: false"
+  >
 
     <a-assets>
-      <img id="card"
-        src="https://cdn.jsdelivr.net/gh/hiukim/mind-ar-js@1.2.5/examples/image-tracking/assets/card-example/card.png" />
-      <a-asset-item id="avatarModel"
-        src="https://cdn.jsdelivr.net/gh/hiukim/mind-ar-js@1.2.5/examples/image-tracking/assets/card-example/softmind/scene.gltf"></a-asset-item>
+      <!-- 〇 / × 画像 -->
+      <img id="okImg" src="./ok.png" />
+      <img id="ngImg" src="./ng.png" />
     </a-assets>
 
     <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
 
     <a-entity mindar-image-target="targetIndex: 0">
-      <a-plane src="#card" position="0 0 0" height="0.552" width="1"></a-plane>
-
-      <a-gltf-model src="#avatarModel" position="0 0 0.1" scale="0.005 0.005 0.005"></a-gltf-model>
 
       <!-- 〇 -->
-      <a-text id="okText" value="〇" color="green" align="center" position="0 0.3 0.2" scale="2 2 2"
-        visible="false"></a-text>
+      <a-plane
+        id="okPlane"
+        src="#okImg"
+        position="0 0 0.2"
+        width="0.6"
+        height="0.6"
+        visible="false"
+      ></a-plane>
 
       <!-- × -->
-      <a-text id="ngText" value="×" color="red" align="center" position="0 0.3 0.2" scale="2 2 2"
-        visible="false"></a-text>
+      <a-plane
+        id="ngPlane"
+        src="#ngImg"
+        position="0 0 0.2"
+        width="0.6"
+        height="0.6"
+        visible="false"
+      ></a-plane>
+
     </a-entity>
   </a-scene>
 
-  <!-- Firebase処理は最後に置く（重要） -->
+  <!-- Firebase処理（今までと同じ書き方） -->
   <script>
     const firebaseConfig = {
       apiKey: "AIzaSyBCBmEzgp94ik4BdrSW0gxN-JwtBHwdvVw",
       authDomain: "kadaikenkyu-f09eb.firebaseapp.com",
-      databaseURL:
-        "https://kadaikenkyu-f09eb-default-rtdb.firebaseio.com",
+      databaseURL: "https://kadaikenkyu-f09eb-default-rtdb.firebaseio.com",
       projectId: "kadaikenkyu-f09eb",
       storageBucket: "kadaikenkyu-f09eb.firebasestorage.app",
       messagingSenderId: "630288283837",
@@ -60,24 +71,23 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    const okText = document.getElementById("okText");
-    const ngText = document.getElementById("ngText");
+    const okPlane = document.getElementById("okPlane");
+    const ngPlane = document.getElementById("ngPlane");
 
     db.ref("status").on("value", (snapshot) => {
       const status = snapshot.val();
 
       if (status === "ok") {
-        okText.setAttribute("visible", true);
-        ngText.setAttribute("visible", false);
+        okPlane.setAttribute("visible", true);
+        ngPlane.setAttribute("visible", false);
       } else if (status === "ng") {
-        okText.setAttribute("visible", false);
-        ngText.setAttribute("visible", true);
+        okPlane.setAttribute("visible", false);
+        ngPlane.setAttribute("visible", true);
       } else {
-        okText.setAttribute("visible", false);
-        ngText.setAttribute("visible", false);
+        okPlane.setAttribute("visible", false);
+        ngPlane.setAttribute("visible", false);
       }
     });
   </script>
 </body>
-
 </html>
