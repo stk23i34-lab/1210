@@ -1,24 +1,91 @@
-<script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
-
+<!DOCTYPE html>
 <html>
   <head>
+    <meta charset="utf-8" />
+    <title>MindAR Firebase AR</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <!-- A-Frame -->
     <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
+
+    <!-- MindAR -->
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
   </head>
-  <body>
-    <a-scene mindar-image="imageTargetSrc: https://cdn.jsdelivr.net/gh/hiukim/mind-ar-js@1.2.5/examples/image-tracking/assets/card-example/card.mind;" color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights" vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
-      <a-assets>
-        <img id="card" src="https://cdn.jsdelivr.net/gh/hiukim/mind-ar-js@1.2.5/examples/image-tracking/assets/card-example/card.png" />
-        <a-asset-item id="avatarModel" src="https://cdn.jsdelivr.net/gh/hiukim/mind-ar-js@1.2.5/examples/image-tracking/assets/card-example/softmind/scene.gltf"></a-asset-item>
-      </a-assets>
 
+  <body>
+    <a-scene
+      mindar-image="imageTargetSrc: ./target.mind;"
+      color-space="sRGB"
+      renderer="colorManagement: true, physicallyCorrectLights"
+      vr-mode-ui="enabled: false"
+      device-orientation-permission-ui="enabled: false"
+      embedded
+    >
       <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+
+      <!-- 画像認識されたときに表示される -->
       <a-entity mindar-image-target="targetIndex: 0">
-        <a-plane src="#card" position="0 0 0" height="0.552" width="1" rotation="0 0 0"></a-plane>
-        <a-gltf-model rotation="0 0 0 " position="0 0 0.1" scale="0.005 0.005 0.005" src="#avatarModel" animation="property: position; to: 0 0.1 0.1; dur: 1000; easing: easeInOutQuad; loop: true; dir: alternate">
+
+        <!-- 〇 -->
+        <a-text
+          id="okMark"
+          value="〇"
+          color="green"
+          align="center"
+          position="0 0 0.1"
+          scale="3 3 3"
+          visible="false"
+        ></a-text>
+
+        <!-- × -->
+        <a-text
+          id="ngMark"
+          value="×"
+          color="red"
+          align="center"
+          position="0 0 0.1"
+          scale="3 3 3"
+          visible="false"
+        ></a-text>
+
       </a-entity>
     </a-scene>
+
+    <!-- Firebase -->
+    <script type="module">
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+      import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+      // 🔽 control.html と同じ設定にする
+      const firebaseConfig = {
+        apiKey: "YOUR_API_KEY",
+        authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+        databaseURL: "https://kadaikenkyu-f09eb-default-rtdb.firebaseio.com",
+        projectId: "YOUR_PROJECT_ID",
+        storageBucket: "YOUR_PROJECT_ID.appspot.com",
+        messagingSenderId: "XXXX",
+        appId: "XXXX"
+      };
+
+      const app = initializeApp(firebaseConfig);
+      const db = getDatabase(app);
+
+      const statusRef = ref(db, "status");
+
+      onValue(statusRef, (snapshot) => {
+        const status = snapshot.val();
+
+        const ok = document.getElementById("okMark");
+        const ng = document.getElementById("ngMark");
+
+        if (status === "ok") {
+          ok.setAttribute("visible", "true");
+          ng.setAttribute("visible", "false");
+        } else if (status === "ng") {
+          ok.setAttribute("visible", "false");
+          ng.setAttribute("visible", "true");
+        }
+      });
+    </script>
   </body>
 </html>
