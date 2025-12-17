@@ -7,20 +7,25 @@
       content="width=device-width, initial-scale=1.0, user-scalable=no"
     />
 
-    <!-- A-Frame -->
+    <!-- A-Frame（1回だけ） -->
     <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
 
-    <!-- MindAR -->
+    <!-- MindAR（1回だけ） -->
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
 
-    <!-- Firebase (v9 compat) -->
+    <!-- Firebase（compat版：scriptタグ用） -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
     <style>
+      html,
       body {
         margin: 0;
+        padding: 0;
+        width: 100%;
+        height: 100%;
         overflow: hidden;
+        background: black;
       }
     </style>
   </head>
@@ -30,40 +35,42 @@
       mindar-image="imageTargetSrc: https://cdn.jsdelivr.net/gh/hiukim/mind-ar-js@1.2.5/examples/image-tracking/assets/card-example/card.mind;"
       vr-mode-ui="enabled: false"
       device-orientation-permission-ui="enabled: false"
+      color-space="sRGB"
       renderer="colorManagement: true; physicallyCorrectLights: true"
       embedded
     >
-      <!-- カメラ -->
       <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
 
-      <!-- マーカー検出 -->
+      <!-- マーカー認識 -->
       <a-entity mindar-image-target="targetIndex: 0">
-        <!-- 〇 -->
+        <!-- OK（〇） -->
         <a-text
           id="okText"
           value="〇"
-          color="#00FF00"
           align="center"
-          position="0 0 0.1"
-          scale="3 3 3"
+          position="0 0 0.2"
+          scale="2 2 2"
+          color="#00ff00"
           visible="false"
         ></a-text>
 
-        <!-- × -->
+        <!-- NG（×） -->
         <a-text
           id="ngText"
           value="×"
-          color="#FF0000"
           align="center"
-          position="0 0 0.1"
-          scale="3 3 3"
+          position="0 0 0.2"
+          scale="2 2 2"
+          color="#ff0000"
           visible="false"
         ></a-text>
       </a-entity>
     </a-scene>
 
     <script>
-      // Firebase 設定（あなたのもの）
+      // =====================
+      // Firebase 初期化
+      // =====================
       const firebaseConfig = {
         apiKey: "AIzaSyBCBmEzgp94ik4BdrSW0gxN-JwtBHwdvVw",
         authDomain: "kadaikenkyu-f09eb.firebaseapp.com",
@@ -75,17 +82,16 @@
         appId: "1:630288283837:web:bd2572959010b0e7c5dfd4",
       };
 
-      // Firebase 初期化
       firebase.initializeApp(firebaseConfig);
-      const database = firebase.database();
+      const db = firebase.database();
 
       const okText = document.getElementById("okText");
       const ngText = document.getElementById("ngText");
 
+      // =====================
       // status を監視
-      const statusRef = database.ref("status");
-
-      statusRef.on("value", (snapshot) => {
+      // =====================
+      db.ref("status").on("value", (snapshot) => {
         const status = snapshot.val();
 
         if (status === "ok") {
