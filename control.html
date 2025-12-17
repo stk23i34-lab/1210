@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>状態コントローラー</title>
+</head>
+
+<body>
+  <h1>相手の状態を切り替える</h1>
+
+  <button onclick="setStatus('ok')" style="font-size:20px; padding:20px;">
+    〇 話しかけてOK
+  </button>
+
+  <br /><br />
+
+  <button onclick="setStatus('ng')" style="font-size:20px; padding:20px;">
+    × 今はダメ
+  </button>
+
+  <p id="current">現在の状態：---</p>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+    import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
+
+    // Firebase 設定（databaseURL だけでOK）
+    const firebaseConfig = {
+      databaseURL: "https://kadaikenkyu-f09eb-default-rtdb.firebaseio.com"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const statusRef = ref(db, "status");
+
+    // ボタンで状態を変更
+    function setStatus(value) {
+      set(statusRef, value);
+    }
+    window.setStatus = setStatus;
+
+    // 現在の状態を表示（確認用）
+    onValue(statusRef, (snapshot) => {
+      document.getElementById("current").textContent =
+        "現在の状態：" + snapshot.val();
+    });
+  </script>
+</body>
+</html>
