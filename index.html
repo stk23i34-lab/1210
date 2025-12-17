@@ -2,75 +2,57 @@
 <html lang="ja">
   <head>
     <meta charset="utf-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1.0, user-scalable=no"
-    />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+    <title>AR Marker Firebase Response</title>
 
-    <!-- A-Frame -->
     <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
 
-    <!-- MindAR -->
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
 
-    <!-- Firebase（compat版） -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
     <style>
-      html,
-      body {
-        margin: 0;
-        padding: 0;
-        width: 100%;
-        height: 100%;
-        overflow: hidden;
-        background: black;
-      }
+      body { margin: 0; overflow: hidden; }
+      /* ローディング中に真っ暗になるのを防ぐための背景 */
+      #container { width: 100vw; height: 100vh; background-color: #000; }
     </style>
   </head>
 
   <body>
-    <a-scene
-      mindar-image="imageTargetSrc: https://cdn.jsdelivr.net/gh/hiukim/mind-ar-js@1.2.5/examples/image-tracking/assets/card-example/card.mind;"
-      vr-mode-ui="enabled: false"
-      device-orientation-permission-ui="enabled: true"
-      color-space="sRGB"
-      renderer="colorManagement: true; physicallyCorrectLights: true"
-      embedded
-    >
-      <!-- シンプルなカメラ -->
-      <a-camera></a-camera>
+    <div id="container">
+      <a-scene
+        mindar-image="imageTargetSrc: https://cdn.jsdelivr.net/gh/hiukim/mind-ar-js@1.2.5/examples/image-tracking/assets/card-example/card.mind;"
+        vr-mode-ui="enabled: false"
+        device-orientation-permission-ui="enabled: true"
+        color-space="sRGB"
+        renderer="colorManagement: true; physicallyCorrectLights: true"
+        embedded
+      >
+        <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
 
-      <!-- マーカー認識 -->
-      <a-entity mindar-image-target="targetIndex: 0">
-        <!-- OK（〇） -->
-        <a-text
-          id="okText"
-          value="〇"
-          align="center"
-          position="0 0 0.2"
-          scale="2 2 2"
-          color="#00ff00"
-          visible="false"
-        ></a-text>
+        <a-entity id="target" mindar-image-target="targetIndex: 0">
+          
+          <a-entity id="okGroup" visible="false">
+            <a-ring color="#00ff00" radius-inner="0.4" radius-outer="0.5" position="0 0 0.1"></a-ring>
+            <a-text value="OK" align="center" color="#00ff00" position="0 0 0.2" scale="1.5 1.5 1.5"></a-text>
+          </a-entity>
 
-        <!-- NG（×） -->
-        <a-text
-          id="ngText"
-          value="×"
-          align="center"
-          position="0 0 0.2"
-          scale="2 2 2"
-          color="#ff0000"
-          visible="false"
-        ></a-text>
-      </a-entity>
-    </a-scene>
+          <a-entity id="ngGroup" visible="false">
+            <a-entity rotation="0 0 45">
+              <a-plane color="#ff0000" width="0.1" height="1" position="0 0 0.1"></a-plane>
+              <a-plane color="#ff0000" width="1" height="0.1" position="0 0 0.1"></a-plane>
+            </a-entity>
+            <a-text value="NG" align="center" color="#ff0000" position="0 0 0.2" scale="1.5 1.5 1.5"></a-text>
+          </a-entity>
+
+        </a-entity>
+      </a-scene>
+    </div>
 
     <script>
       // =====================
-      // Firebase 初期化
+      // 1. Firebase 初期化
       // =====================
       const firebaseConfig = {
         apiKey: "AIzaSyBCBmEzgp94ik4BdrSW0gxN-JwtBHwdvVw",
@@ -85,25 +67,35 @@
       firebase.initializeApp(firebaseConfig);
       const db = firebase.database();
 
-      const okText = document.getElementById("okText");
-      const ngText = document.getElementById("ngText");
+      const okGroup = document.getElementById("okGroup");
+      const ngGroup = document.getElementById("ngGroup");
 
       // =====================
-      // status を監視
+      // 2. リアルタイム監視
       // =====================
       db.ref("status").on("value", (snapshot) => {
         const status = snapshot.val();
+        console.log("Firebase Status Changed:", status);
 
         if (status === "ok") {
-          okText.setAttribute("visible", true);
-          ngText.setAttribute("visible", false);
+          okGroup.setAttribute("visible", "true");
+          ngGroup.setAttribute("visible", "false");
         } else if (status === "ng") {
-          okText.setAttribute("visible", false);
-          ngText.setAttribute("visible", true);
+          okGroup.setAttribute("visible", "false");
+          ngGroup.setAttribute("visible", "true");
         } else {
-          okText.setAttribute("visible", false);
-          ngText.setAttribute("visible", false);
+          okGroup.setAttribute("visible", "false");
+          ngGroup.setAttribute("visible", "false");
         }
+      });
+
+      // エラーハンドリング（カメラが起動しない理由をログに出す）
+      window.addEventListener("load", () => {
+        const sceneEl = document.querySelector('a-scene');
+        sceneEl.addEventListener("arError", (event) => {
+          console.error("AR Error:", event.detail.error);
+          alert("カメラの起動に失敗しました。HTTPS接続か確認してください。");
+        });
       });
     </script>
   </body>
