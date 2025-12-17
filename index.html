@@ -1,25 +1,111 @@
-<script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
+<!DOCTYPE html>
 <html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-<head>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
-</head>
+    <!-- A-Frame（1回だけ） -->
+    <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
 
-<body> <a-scene
-    mindar-image="imageTargetSrc: https://cdn.jsdelivr.net/gh/hiukim/mind-ar-js@1.2.5/examples/image-tracking/assets/card-example/card.mind;"
-    color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights" vr-mode-ui="enabled: false"
-    device-orientation-permission-ui="enabled: false"> <a-assets> <img id="card"
-        src="https://cdn.jsdelivr.net/gh/hiukim/mind-ar-js@1.2.5/examples/image-tracking/assets/card-example/card.png" />
-      <a-asset-item id="avatarModel"
-        src="https://cdn.jsdelivr.net/gh/hiukim/mind-ar-js@1.2.5/examples/image-tracking/assets/card-example/softmind/scene.gltf"></a-asset-item>
-    </a-assets> <a-camera position="0 0 0" look-controls="enabled: false"></a-camera> <a-entity
-      mindar-image-target="targetIndex: 0"> <a-plane src="#card" position="0 0 0" height="0.552" width="1"
-        rotation="0 0 0"></a-plane> <a-gltf-model rotation="0 0 0 " position="0 0 0.1" scale="0.005 0.005 0.005"
-        src="#avatarModel"
-        animation="property: position; to: 0 0.1 0.1; dur: 1000; easing: easeInOutQuad; loop: true; dir: alternate">
-    </a-entity> </a-scene> </body>
+    <!-- MindAR（1回だけ） -->
+    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
 
+    <!-- Firebase（compat版） -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  </head>
+
+  <body>
+    <a-scene
+      mindar-image="imageTargetSrc: https://cdn.jsdelivr.net/gh/hiukim/mind-ar-js@1.2.5/examples/image-tracking/assets/card-example/card.mind;"
+      color-space="sRGB"
+      renderer="colorManagement: true, physicallyCorrectLights"
+      vr-mode-ui="enabled: false"
+      device-orientation-permission-ui="enabled: false"
+    >
+      <a-assets>
+        <img
+          id="card"
+          src="https://cdn.jsdelivr.net/gh/hiukim/mind-ar-js@1.2.5/examples/image-tracking/assets/card-example/card.png"
+        />
+        <a-asset-item
+          id="avatarModel"
+          src="https://cdn.jsdelivr.net/gh/hiukim/mind-ar-js@1.2.5/examples/image-tracking/assets/card-example/softmind/scene.gltf"
+        ></a-asset-item>
+      </a-assets>
+
+      <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+
+      <a-entity mindar-image-target="targetIndex: 0">
+        <a-plane
+          src="#card"
+          position="0 0 0"
+          height="0.552"
+          width="1"
+        ></a-plane>
+
+        <a-gltf-model
+          src="#avatarModel"
+          position="0 0 0.1"
+          scale="0.005 0.005 0.005"
+        ></a-gltf-model>
+
+        <!-- 〇 -->
+        <a-text
+          id="okText"
+          value="〇"
+          color="green"
+          align="center"
+          position="0 0.3 0.2"
+          scale="2 2 2"
+          visible="false"
+        ></a-text>
+
+        <!-- × -->
+        <a-text
+          id="ngText"
+          value="×"
+          color="red"
+          align="center"
+          position="0 0.3 0.2"
+          scale="2 2 2"
+          visible="false"
+        ></a-text>
+      </a-entity>
+    </a-scene>
+
+    <!-- Firebase処理は最後に置く（重要） -->
+    <script>
+      const firebaseConfig = {
+        apiKey: "AIzaSyBCBmEzgp94ik4BdrSW0gxN-JwtBHwdvVw",
+        authDomain: "kadaikenkyu-f09eb.firebaseapp.com",
+        databaseURL:
+          "https://kadaikenkyu-f09eb-default-rtdb.firebaseio.com",
+        projectId: "kadaikenkyu-f09eb",
+        storageBucket: "kadaikenkyu-f09eb.firebasestorage.app",
+        messagingSenderId: "630288283837",
+        appId: "1:630288283837:web:bd2572959010b0e7c5dfd4",
+      };
+
+      firebase.initializeApp(firebaseConfig);
+      const db = firebase.database();
+
+      const okText = document.getElementById("okText");
+      const ngText = document.getElementById("ngText");
+
+      db.ref("status").on("value", (snapshot) => {
+        const status = snapshot.val();
+
+        if (status === "ok") {
+          okText.setAttribute("visible", true);
+          ngText.setAttribute("visible", false);
+        } else if (status === "ng") {
+          okText.setAttribute("visible", false);
+          ngText.setAttribute("visible", true);
+        } else {
+          okText.setAttribute("visible", false);
+          ngText.setAttribute("visible", false);
+        }
+      });
+    </script>
+  </body>
 </html>
